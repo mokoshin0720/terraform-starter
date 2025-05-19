@@ -1,0 +1,52 @@
+version: 3
+
+dotenv: [".env"]
+
+tasks:
+  default:
+    desc: help
+    cmds:
+      - task: terraform
+        silent: true
+
+  gen:
+    desc: generate terraform config
+    vars:
+      PATH:
+        sh: echo {{.CHDIR}} | cut -d "/" -f2-
+    cmds:
+      - app=favorite stage={{.STAGE}} path={{.PATH}} envsubst < config/config.tpl.tf > env/{{.PATH}}/config.tf
+
+  init:
+    desc: generate terraform config
+    cmds:
+      - terraform -chdir={{.CHDIR}} init
+
+  fmt:
+    desc: terraform fmt
+    cmds:
+      - terraform fmt -recursive
+
+  terraform:
+    desc: run terraform command
+    deps:
+      - task: gen
+        vars:
+          CHDIR: "{{.CHDIR}}"
+      - task: init
+        vars:
+          CHDIR: "{{.CHDIR}}"
+    vars:
+      CHDIR:
+        sh: |
+          s="{{.CHDIR}}"
+          if [[ $s == */ ]]; then s=${s::-1}; fi
+          echo $s
+    preconditions:
+      - sh: |
+          account=$(aws sts get-caller-identity --query Account --output text)
+          [ $account = $AWS_ACCOUNT_ID ]
+        msg: AWS_PROFILE is not favorite
+    cmds:
+      - task: fmt
+      - terraform -chdir={{.CHDIR}} {{.CLI_ARGS}}
