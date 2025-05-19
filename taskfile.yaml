@@ -2,6 +2,9 @@ version: 3
 
 dotenv: [".env"]
 
+vars:
+  APP: app_name
+
 tasks:
   default:
     desc: help
@@ -11,14 +14,30 @@ tasks:
 
   gen:
     desc: generate terraform config
+    summary: |
+      Generate terraform config.
+
+      Usage:
+        task gen [--flags]
+
+      Examples:
+        $ task gen CHDIR=env/stg/network STAGE=stg
     vars:
       PATH:
         sh: echo {{.CHDIR}} | cut -d "/" -f2-
     cmds:
-      - app=favorite stage={{.STAGE}} path={{.PATH}} envsubst < config/config.tpl.tf > env/{{.PATH}}/config.tf
+      - app={{.APP}} stage={{.STAGE}} path={{.PATH}} envsubst < terraform/config/config.tpl.tf > terraform/env/{{.PATH}}/config.tf
 
   init:
     desc: generate terraform config
+    summary: |
+      Initialize terraform.
+
+      Usage:
+        task init [--flags]
+
+      Examples:
+        $ task init CHDIR=env/stg/network STAGE=stg
     cmds:
       - terraform -chdir={{.CHDIR}} init
 
@@ -46,7 +65,7 @@ tasks:
       - sh: |
           account=$(aws sts get-caller-identity --query Account --output text)
           [ $account = $AWS_ACCOUNT_ID ]
-        msg: AWS_PROFILE is not favorite
+        msg: AWS_PROFILE is not {{.APP}}
     cmds:
       - task: fmt
       - terraform -chdir={{.CHDIR}} {{.CLI_ARGS}}
