@@ -12,6 +12,11 @@ tasks:
       - task: terraform
         silent: true
 
+  fmt:
+    desc: terraform fmt
+    cmds:
+      - terraform fmt -recursive
+
   gen:
     desc: generate terraform config
     summary: |
@@ -39,12 +44,7 @@ tasks:
       Examples:
         $ task init CHDIR=env/stg/network STAGE=stg
     cmds:
-      - terraform -chdir={{.CHDIR}} init
-
-  fmt:
-    desc: terraform fmt
-    cmds:
-      - terraform fmt -recursive
+      - terraform -chdir=terraform/{{.CHDIR}} init
 
   terraform:
     desc: run terraform command
@@ -55,7 +55,7 @@ tasks:
         task terraform [--flags]
 
       Examples:
-        $ task terraform CHDIR=env/stg/network STAGE=stg plan
+        $ task terraform CHDIR=env/stg/network STAGE=stg -- plan
     deps:
       - task: gen
         vars:
@@ -76,4 +76,4 @@ tasks:
         msg: AWS_PROFILE is not {{.APP}}
     cmds:
       - task: fmt
-      - terraform -chdir={{.CHDIR}} {{.CLI_ARGS}}
+      - terraform -chdir=terraform/{{.CHDIR}} {{.CLI_ARGS}}
