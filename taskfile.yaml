@@ -48,6 +48,14 @@ tasks:
 
   terraform:
     desc: run terraform command
+    summary: |
+      Run terraform command.
+
+      Usage:
+        task terraform [--flags]
+
+      Examples:
+        $ task terraform CHDIR=env/stg/network STAGE=stg plan
     deps:
       - task: gen
         vars:
